@@ -11,17 +11,44 @@ df = pd.read_csv("data/01.csv", header =0)
 df = df.dropna()    #suppression des cases nulles
 df = df[ df["callsign"].str.strip() != ("")]    #suppression des cases avec callsign == "   "
 
+#df = df[ df["callsign"].str.strip() == ("UPS208")]
 df.index = np.arange(len(df))   #réagencement des index
 
 #for i in tqdm(range(0, len(df))):
     #df.iloc[:,0] = datetime.datetime.fromtimestamp(df.iloc[:,0]).utcnow()
 
 # https://germain-forestier.info/teaching/files/FD4/09-hierarchique.pdf
-import pandas as pd
-import numpy as np
+
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import pdist , squareform
 from scipy.cluster.hierarchy import linkage , dendrogram
+import seaborn as sns
+
+
+#représentation graphique de tous les vols
+lst = df["callsign"].unique()
+
+for sign in tqdm(lst):
+    temp = df[ df["callsign"].str.strip() == sign.strip()]
+    X = temp.iloc[: ,0:5].values
+    
+    plt.figure(figsize=(9, 3))
+    plt.subplot(121)
+    #vitesse en fonction du temps
+    plt.scatter (X[:,0] , X[:,4] )
+    plt.xlabel (df.columns[0])
+    plt.ylabel (df.columns[4])
+    plt.subplot(122)
+    
+    #longitude en fonction de la latitude
+    plt.scatter (X[:,2] , X[:,3] )
+    plt.xlabel (df.columns[2])
+    plt.ylabel (df.columns[3])
+    plt.suptitle(sign)
+    plt.show ()
+    
+    #ax = sns.pairplot(temp)
+
 
 print("END")
         
