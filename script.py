@@ -6,12 +6,13 @@ import numpy as np
 from tqdm import tqdm
 import time, datetime
 # lecture des donnees
-df = pd.read_csv("data/01.csv", header =0)
+df = pd.read_csv("data/states_2019-12-23-00.csv", header =0)
 # nettoyage des donnees
 df = df.dropna()    #suppression des cases nulles
 df = df[ df["callsign"].str.strip() != ("")]    #suppression des cases avec callsign == "   "
 
-#df = df[ df["callsign"].str.strip() == ("UPS208")]
+#df = df[ df["callsign"].str.strip() == ("VOI941")]
+#df = df[ df["squawk"] == (7000)]
 df.index = np.arange(len(df))   #réagencement des index
 
 #for i in tqdm(range(0, len(df))):
@@ -27,6 +28,7 @@ import seaborn as sns
 
 #représentation graphique de tous les vols
 lst = df["callsign"].unique()
+
 
 for sign in tqdm(lst):
     temp = df[ df["callsign"].str.strip() == sign.strip()]
