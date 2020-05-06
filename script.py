@@ -8,12 +8,11 @@ import time, datetime
 # lecture des donnees
 df = pd.read_csv("data/01.csv", header =0)
 # nettoyage des donnees
-df = df.dropna()
+df = df.dropna()    #suppression des cases nulles
+df = df[ df["callsign"].str.strip() != ("")]    #suppression des cases avec callsign == "   "
 
+df.index = np.arange(len(df))   #réagencement des index
 
-#df = df[df["callsign"].str.contains("ATN3407")]
-
-df.index = np.arange(len(df))
 #for i in tqdm(range(0, len(df))):
     #df.iloc[:,0] = datetime.datetime.fromtimestamp(df.iloc[:,0]).utcnow()
 
