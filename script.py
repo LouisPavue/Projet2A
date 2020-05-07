@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 import time, datetime
 # lecture des donnees
-df = pd.read_csv("data/states_2019-12-23-00.csv", header =0)
+df = pd.read_csv("data/states_2019-12-23-00.csv", header =0, engine='python')
 # nettoyage des donnees
 df = df.dropna()    #suppression des cases nulles
 df = df[ df["callsign"].str.strip() != ("")]    #suppression des cases avec callsign == "   "
@@ -24,8 +24,13 @@ import matplotlib.pyplot as plt
 from scipy.spatial.distance import pdist , squareform
 from scipy.cluster.hierarchy import linkage , dendrogram
 import seaborn as sns
+from mpl_toolkits import mplot3d
 
 
+
+
+#---------------- Visualisation 2D ---------------
+"""
 #représentation graphique de tous les vols
 lst = df["callsign"].unique()
 
@@ -47,10 +52,39 @@ for sign in tqdm(lst):
     plt.xlabel (df.columns[2])
     plt.ylabel (df.columns[3])
     plt.suptitle(sign)
-    plt.show ()
+    #plt.show ()
     
     #ax = sns.pairplot(temp)
 
+"""
+
+
+#--------------- Vitesse Verticale ----------------
+
+lst = df["callsign"].unique()
+verticalSpeed = pd.DataFrame()
+nTakeOff_colTest = 10
+Vspeed_index = 6
+
+for sign in tqdm(lst):
+    temp = df[ df["callsign"].str.strip() == sign.strip()]
+    #vertical speed values for a callsign
+    V = list(temp.iloc[0:nTakeOff_colTest,Vspeed_index].values)
+    #adding the callsign to the list of speed
+    V.insert(0,sign.strip())
+    #convert to an array for de df
+    speed_row = pd.Series(V)
+    #speed df
+    speed_df = pd.DataFrame([speed_row])
+    #concatenation of both dataframes
+    verticalSpeed = pd.concat([verticalSpeed, speed_df], ignore_index=True)
+    
+
+
+
+#---------------- Visualisation 3D ---------------
+fig = plt.figure()
+ax = plt.axes(projection='3d')
 
 print("END")
         
