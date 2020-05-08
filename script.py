@@ -5,13 +5,15 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 import time, datetime
+from math import *
 # lecture des donnees
+print("Lecture données ")
 df = pd.read_csv("data/states_2019-12-23-00.csv", header =0, engine='python')
 # nettoyage des donnees
 df = df.dropna()    #suppression des cases nulles
 df = df[ df["callsign"].str.strip() != ("")]    #suppression des cases avec callsign == "   "
 
-#df = df[ df["callsign"].str.strip() == ("VOI941")]
+#df = df[ df["callsign"].str.strip() == ("THY6233")]
 #df = df[ df["squawk"] == (7000)]
 df.index = np.arange(len(df))   #réagencement des index
 
@@ -59,14 +61,17 @@ for sign in tqdm(lst):
 """
 
 
-#--------------- Vitesse Verticale ----------------
-
 lst = df["callsign"].unique()
+lst = lst[0:10]
 verticalSpeed = pd.DataFrame()
 nTakeOff_colTest = 10
 Vspeed_index = 6
 
+
+print("Traitement des données")
+f = open("decollage.csv", "w")
 for sign in tqdm(lst):
+  
     temp = df[ df["callsign"].str.strip() == sign.strip()]
     #vertical speed values for a callsign
     V = list(temp.iloc[0:nTakeOff_colTest,Vspeed_index].values)
@@ -78,14 +83,46 @@ for sign in tqdm(lst):
     speed_df = pd.DataFrame([speed_row])
     #concatenation of both dataframes
     verticalSpeed = pd.concat([verticalSpeed, speed_df], ignore_index=True)
+    #print(verticalSpeed)
+    label = None
+    somme = 0
+    for c in range(0, nTakeOff_colTest):
+        somme += speed_df[1+c]
+        
+    moyenne = somme / nTakeOff_colTest
+    if(abs(moyenne[0]) < 3):
+        label = "palier"
+    elif(moyenne[0] >= 3):
+        label = "montée"
+    else:
+        label = "descente"
+    f.write(str(sign)+" , "+label+" , "+str(moyenne[0])+"\n")
     
+    #---------------- Visualisation 3D ---------------
+    
+    
+print("END")
+    
+f.close()
 
+test = pd.read_csv("decollage.csv", header =0, engine='python')
 
+#--------------- Vitesse Verticale ----------------
+"""
 
-#---------------- Visualisation 3D ---------------
 fig = plt.figure()
 ax = plt.axes(projection='3d')
 
-print("END")
-        
+# Data for a three-dimensional line
+#zline = np.linspace(0, 15, 1000)
+#xline = np.sin(zline)
+#yline = np.cos(zline)
+#ax.plot3D(xline, yline, zline, 'gray')
 
+zdata = df.iloc[:,13]
+xdata = df.iloc[:,2]
+ydata = df.iloc[:,3]
+ax.scatter3D(xdata, ydata, zdata, c=zdata, cmap='Reds');
+
+plt.show ()
+"""
