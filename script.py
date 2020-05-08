@@ -60,7 +60,7 @@ for sign in tqdm(lst):
 
 
 #--------------- Vitesse Verticale ----------------
-
+"""
 lst = df["callsign"].unique()
 verticalSpeed = pd.DataFrame()
 nTakeOff_colTest = 10
@@ -79,12 +79,27 @@ for sign in tqdm(lst):
     #concatenation of both dataframes
     verticalSpeed = pd.concat([verticalSpeed, speed_df], ignore_index=True)
     
-
+"""
 
 
 #---------------- Visualisation 3D ---------------
-fig = plt.figure()
-ax = plt.axes(projection='3d')
+
+#représentation graphique de tous les vols
+lst = df["callsign"].unique()
+
+
+for sign in tqdm(lst):
+    temp = df[ df["callsign"].str.strip() == sign.strip()]
+    X = temp.iloc[: ,0:13].values
+    
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    
+    zdata = X[:,12]
+    xdata = X[:,2]
+    ydata = X[:,3]
+    ax.scatter3D(xdata, ydata, zdata, c=zdata, cmap='Greens');
+
 
 print("END")
         
