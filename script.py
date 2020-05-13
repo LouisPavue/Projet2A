@@ -33,39 +33,41 @@ from mpl_toolkits import mplot3d
 
 
 #---------------- Visualisation 2D ---------------
-"""
+
 #représentation graphique de tous les vols
 lst = df["callsign"].unique()
 
 
 for sign in tqdm(lst):
     temp = df[ df["callsign"].str.strip() == sign.strip()]
-    X = temp.iloc[: ,0:6].values
+    X = temp.iloc[: ,:].values
     
-    plt.figure(figsize=(9, 3))
+    plt.figure(figsize=(3, 3))
     plt.subplot(131)
     #vitesse en fonction du temps
     plt.scatter (X[:,0] , X[:,4] )
     plt.xlabel (df.columns[0])
     plt.ylabel (df.columns[4])
-    plt.subplot(132)
     
+    plt.subplot(132)    
     #longitude en fonction de la latitude
     plt.scatter (X[:,2] , X[:,3] )
     plt.xlabel (df.columns[2])
     plt.ylabel (df.columns[3])
     plt.suptitle(sign)
     
-
+    plt.subplot(133)    
+    #longitude en fonction de la latitude
+    plt.scatter (X[:,0] , X[:,12] )
+    plt.xlabel (df.columns[0])
+    plt.ylabel (df.columns[12])
+    plt.suptitle(sign)
     plt.show ()
     
-    plt.scatter (X[:,0] , X[:,5] )
-    plt.xlabel (df.columns[0])
-    plt.ylabel (df.columns[5])
-    plt.show()
+    
     #ax = sns.pairplot(temp)
 
-"""
+
 
 
 lst = df["callsign"].unique()
@@ -73,6 +75,7 @@ lst = lst[0:10]
 verticalSpeed = pd.DataFrame()
 verticalSpeedEnd = pd.DataFrame()
 headings = pd.DataFrame()
+positions = pd.DataFrame()
 
 nTakeOff_colTest = 10
 Vspeed_index = 6
@@ -88,9 +91,17 @@ for sign in tqdm(lst):
     #vertical speed values for a callsign
     Vd = list(temp.iloc[0:nTakeOff_colTest,Vspeed_index].values)
     Vf = list(temp.iloc[-nTakeOff_colTest-1:-1,Vspeed_index].values)
+    
     heading = list(temp.iloc[:,Vheading].values)
     heading_delta = (max(heading) - min(heading))   #sens horraire
     heading_delta_inverse = 360 - (max(heading) - min(heading))   #sens anti-horraire
+    
+    t_positions = (temp.iloc[:,2:4].values)
+    for i in range(0, len(t_positions)):
+        point = (t_positions[i,0],t_positions[i,1])
+        flag = np.isin(point,t_positions[i:,:])
+        #print(flag)
+        
     
     #adding the callsign to the list of speed
     Vd.insert(0,sign.strip())
