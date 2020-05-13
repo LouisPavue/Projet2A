@@ -6,43 +6,57 @@ import numpy as np
 from tqdm import tqdm
 import time, datetime
 from math import *
+
+import matplotlib.pyplot as plt
+
+import seaborn as sns
+from mpl_toolkits import mplot3d
+from sklearn.preprocessing import QuantileTransformer
+
 # lecture des donnees
 print("Lecture données ")
 df = pd.read_csv("data/states_2019-12-23-00.csv", header =0, engine='python')
+labels = pd.read_csv("data/label.csv", header =0, engine='python')
 # nettoyage des donnees
 df = df.dropna()    #suppression des cases nulles
 df = df[ df["callsign"].str.strip() != ("")]    #suppression des cases avec callsign == "   "
 
 #df = df[ df["callsign"].str.strip() == ("VOI941")]
-#df = df[ df["squawk"] == (7000)]
+#df = df[ df["baroaltitude"] < 1000]
 df.index = np.arange(len(df))   #réagencement des index
+X =  pd.DataFrame()
+for i in tqdm(range(0,len(labels["Callsign"]))): 
+    sign = labels["Callsign"][i]
+    label = labels["Label"][i]
+    extract = df[ df["callsign"].str.strip() == sign]
+    extract.insert(16,"label",label)
+    X = pd.concat([X, extract], ignore_index=True)
 
-aze = df[ df["callsign"].str.strip() == ("CTM0021")]
+ 
+print("end")    
+#aze = df[ df["callsign"].str.strip() == ("UAE322")]
 #for i in tqdm(range(0, len(df))):
     #df.iloc[:,0] = datetime.datetime.fromtimestamp(df.iloc[:,0]).utcnow()
 
 # https://germain-forestier.info/teaching/files/FD4/09-hierarchique.pdf
-
-import matplotlib.pyplot as plt
-from scipy.spatial.distance import pdist , squareform
-from scipy.cluster.hierarchy import linkage , dendrogram
-import seaborn as sns
-from mpl_toolkits import mplot3d
+"""
 
 
-
+pt = PowerTransformer(method="azr")
 
 #---------------- Visualisation 2D ---------------
 
 #représentation graphique de tous les vols
 lst = df["callsign"].unique()
 
+lst = lst[340:390]
 
 for sign in tqdm(lst):
+    print(sign)
     temp = df[ df["callsign"].str.strip() == sign.strip()]
     X = temp.iloc[: ,:].values
     
-    plt.figure(figsize=(3, 3))
+    plt.figure(figsize=(15, 3))
     plt.subplot(131)
     #vitesse en fonction du temps
     plt.scatter (X[:,0] , X[:,4] )
@@ -58,9 +72,9 @@ for sign in tqdm(lst):
     
     plt.subplot(133)    
     #longitude en fonction de la latitude
-    plt.scatter (X[:,0] , X[:,12] )
+    plt.scatter (X[:,0] , X[:,12])
     plt.xlabel (df.columns[0])
-    plt.ylabel (df.columns[12])
+    plt.ylabel (df.columns[13])
     plt.suptitle(sign)
     plt.show ()
     
@@ -191,12 +205,12 @@ test = pd.read_csv("dumb.csv", header =0, engine='python')
 
 #--------------- Vitesse Verticale ----------------
 """
-
+"""
 fig = plt.figure()
 ax = plt.axes(projection='3d')
 
 # Data for a three-dimensional line
-aze = df[ df["callsign"].str.strip() == ("JBU2136")]
+aze = df[ df["callsign"].str.strip() == ("KAL893")]
 #zline = np.linspace(0, 15, 1000)
 #xline = np.sin(zline)
 #yline = np.cos(zline)
