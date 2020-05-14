@@ -4,7 +4,7 @@
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-import time, datetime
+from datetime import datetime
 from math import *
 
 import matplotlib.pyplot as plt
@@ -15,24 +15,51 @@ from sklearn.preprocessing import QuantileTransformer
 
 # lecture des donnees
 print("Lecture données ")
-df = pd.read_csv("data/states_2019-12-23-00.csv", header =0, engine='python')
+
+def parser(x):
+	return datetime.utcfromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
+
+df = pd.read_csv("data/states_2019-12-23-00.csv", header =0, engine='python' ,parse_dates=[0], index_col=0, squeeze=True, date_parser=parser)
 labels = pd.read_csv("data/label.csv", header =0, engine='python')
 # nettoyage des donnees
 df = df.dropna()    #suppression des cases nulles
 df = df[ df["callsign"].str.strip() != ("")]    #suppression des cases avec callsign == "   "
 
+df = df.drop(columns=["icao24" , "onground" , "alert" , "spi" , "squawk" , "geoaltitude", "lastposupdate" , "lastcontact"])
+    
 #df = df[ df["callsign"].str.strip() == ("VOI941")]
 #df = df[ df["baroaltitude"] < 1000]
-df.index = np.arange(len(df))   #réagencement des index
+#df.index = np.arange(len(df))   #réagencement des index
 X =  pd.DataFrame()
-for i in tqdm(range(0,len(labels["Callsign"]))): 
+
+maxim = 0
+for i in tqdm(range(0,len(labels[labels["Callsign"].str.strip() == "ART9771"]))): 
+#for i in tqdm(range(0,len(labels["Callsign"]))): 
     sign = labels["Callsign"][i]
     label = labels["Label"][i]
     extract = df[ df["callsign"].str.strip() == sign]
-    extract.insert(16,"label",label)
+    extract.insert(len(df.columns),"label",label)
+    print(sign + " len : "+str(len(extract)))
+    maxim = max(maxim,len(extract))
+
+    #extract['time'] = extract['time'].apply(lambda x: datetime.utcfromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S'))
+    #extract.index  = extract['time']
+    #extract = extract.resample('10S').bfill()[0:180]
+    
+    extract = extract.iloc[:,0]
+    print(extract.head(380))
+    extract = extract.resample('10S').mean()
+    extract = extract.interpolate(method='linear' , axis=0)
+    print(extract.head(380))
+    #lst = pd.Series(list(extract.iloc[:,1]))
+     #lst.index = extract['time']
+    #lst.resample('10S').bfill()[0:10]
+    #extract.plot()
     X = pd.concat([X, extract], ignore_index=True)
 
- 
+
+
+print("Taille : "+str(maxim)) 
 print("end")    
 #aze = df[ df["callsign"].str.strip() == ("UAE322")]
 #for i in tqdm(range(0, len(df))):
