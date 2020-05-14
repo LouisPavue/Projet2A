@@ -19,7 +19,7 @@ print("Lecture données ")
 def parser(x):
 	return datetime.utcfromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
 
-df = pd.read_csv("data/states_2019-12-23-00.csv", header =0, engine='python' ,parse_dates=[0], index_col=0, squeeze=True, date_parser=parser)
+df = pd.read_csv("data/states_2019-12-23-00.csv", header =0, engine='python')
 labels = pd.read_csv("data/label.csv", header =0, engine='python')
 # nettoyage des donnees
 df = df.dropna()    #suppression des cases nulles
@@ -33,8 +33,8 @@ df = df.drop(columns=["icao24" , "onground" , "alert" , "spi" , "squawk" , "geoa
 X =  pd.DataFrame()
 
 maxim = 0
-for i in tqdm(range(0,len(labels[labels["Callsign"].str.strip() == "ART9771"]))): 
-#for i in tqdm(range(0,len(labels["Callsign"]))): 
+#for i in tqdm(range(0,len(labels[labels["Callsign"].str.strip() == "ART9771"]))): 
+for i in tqdm(range(0,len(labels["Callsign"]))): 
     sign = labels["Callsign"][i]
     label = labels["Label"][i]
     extract = df[ df["callsign"].str.strip() == sign]
@@ -42,23 +42,47 @@ for i in tqdm(range(0,len(labels[labels["Callsign"].str.strip() == "ART9771"])))
     print(sign + " len : "+str(len(extract)))
     maxim = max(maxim,len(extract))
 
-    #extract['time'] = extract['time'].apply(lambda x: datetime.utcfromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S'))
+    extract['time'] = extract['time'].apply(lambda x: datetime.utcfromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S'))
     #extract.index  = extract['time']
     #extract = extract.resample('10S').bfill()[0:180]
     
-    extract = extract.iloc[:,0]
-    print(extract.head(380))
-    extract = extract.resample('10S').mean()
-    extract = extract.interpolate(method='linear' , axis=0)
-    print(extract.head(380))
-    #lst = pd.Series(list(extract.iloc[:,1]))
-     #lst.index = extract['time']
-    #lst.resample('10S').bfill()[0:10]
-    #extract.plot()
-    X = pd.concat([X, extract], ignore_index=True)
+ 
+    tmp = extract.iloc[-1]
+    last_value = tmp.values[-1]
+    i = len(extract)
+    nbpoints = 180
+    if( i < nbpoints):
+        goal_row = nbpoints
+        while i < goal_row :
+            extract = extract.append(tmp , ignore_index=False)
+            i+=1
+    elif( i >= nbpoints):
+        extract_tmp = extract
+        goal_row = nbpoints*2
+        while i < goal_row :
+            extract_tmp = extract_tmp.append(tmp , ignore_index=False)
+            i+=1
+        extract = pd.DataFrame()
+        z = pd.DataFrame()
+        z2 = pd.DataFrame()
+        
+        for j in range(0,goal_row,2):
+            
+            z = extract_tmp.iloc[j]
+            z2 = extract_tmp.iloc[j+1]
+            z = pd.DataFrame([z])
+            z2 = pd.DataFrame([z2])
+            z = pd.concat([z,z2])
+            z = pd.DataFrame([z.mean()])
+            z.insert(0,"time",[extract_tmp.iloc[j][0]])
+            z.insert(6,"callsign",[extract_tmp.iloc[j][6]])
+            z.insert(8,"label",[extract_tmp.iloc[j][8]])
+            
+            X = pd.concat([X,z])
 
+    X = pd.concat([X, extract])
 
-
+X.index = np.arange(len(X))   #réagencement des index
 print("Taille : "+str(maxim)) 
 print("end")    
 #aze = df[ df["callsign"].str.strip() == ("UAE322")]
@@ -74,38 +98,68 @@ pt = PowerTransformer(method="azr")
 #---------------- Visualisation 2D ---------------
 
 #représentation graphique de tous les vols
-lst = df["callsign"].unique()
 
-lst = lst[340:390]
+lst = X[X["callsign"].str.strip() == "N319EP" ]
+lst = lst["callsign"].unique()
 
 for sign in tqdm(lst):
     print(sign)
-    temp = df[ df["callsign"].str.strip() == sign.strip()]
-    X = temp.iloc[: ,:].values
+    temp = X[ X["callsign"].str.strip() == "N319EP"]
+    Xp = temp.iloc[: ,:].values
     
     plt.figure(figsize=(15, 3))
     plt.subplot(131)
     #vitesse en fonction du temps
-    plt.scatter (X[:,0] , X[:,4] )
+    plt.scatter (Xp[:,0] , Xp[:,3] )
     plt.xlabel (df.columns[0])
-    plt.ylabel (df.columns[4])
+    plt.ylabel (df.columns[3])
     
     plt.subplot(132)    
     #longitude en fonction de la latitude
-    plt.scatter (X[:,2] , X[:,3] )
-    plt.xlabel (df.columns[2])
-    plt.ylabel (df.columns[3])
+    plt.scatter (Xp[:,1] , Xp[:,2] )
+    plt.xlabel (df.columns[1])
+    plt.ylabel (df.columns[2])
     plt.suptitle(sign)
     
     plt.subplot(133)    
     #longitude en fonction de la latitude
-    plt.scatter (X[:,0] , X[:,12])
+    plt.scatter (Xp[:,0] , Xp[:,7])
     plt.xlabel (df.columns[0])
-    plt.ylabel (df.columns[13])
+    plt.ylabel (df.columns[7])
     plt.suptitle(sign)
     plt.show ()
     
+ 
+lst = df[df["callsign"].str.strip() == "N319EP" ]
+lst = lst["callsign"].unique()
+
+for sign in tqdm(lst):
+    print(sign)
+    temp = df[ df["callsign"].str.strip() == "N319EP"]
+    Xp = temp.iloc[: ,:].values
     
+    plt.figure(figsize=(15, 3))
+    plt.subplot(131)
+    #vitesse en fonction du temps
+    plt.scatter (Xp[:,0] , Xp[:,3] )
+    plt.xlabel (df.columns[0])
+    plt.ylabel (df.columns[3])
+    
+    plt.subplot(132)    
+    #longitude en fonction de la latitude
+    plt.scatter (Xp[:,1] , Xp[:,2] )
+    plt.xlabel (df.columns[1])
+    plt.ylabel (df.columns[2])
+    plt.suptitle(sign)
+    
+    plt.subplot(133)    
+    #longitude en fonction de la latitude
+    plt.scatter (Xp[:,0] , Xp[:,7])
+    plt.xlabel (df.columns[0])
+    plt.ylabel (df.columns[7])
+    plt.suptitle(sign)
+    plt.show ()
+        
     #ax = sns.pairplot(temp)
 
 
