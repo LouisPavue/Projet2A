@@ -1,29 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri May 15 10:59:38 2020
+Created on Tue May 19 11:53:17 2020
 
 @author: yassine.sameh
 """
+
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from datetime import datetime
 from math import *
-
+import math
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
-
 import seaborn as sns
 from mpl_toolkits import mplot3d
 from sklearn.preprocessing import QuantileTransformer
-
 import time as t
 from sklearn.preprocessing import StandardScaler
-from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+from scipy.spatial import distance
 
 
 def display_runtime(start):
@@ -39,9 +40,40 @@ def display_runtime(start):
     result += str(int(seconds)) + "s "
     result += str(round((seconds-int(seconds))*1000)) + "ms"
     print('Elapsed Time : ', result)
+
+
+"""
+def dtw(s1, s2):
+    DTW = np.zeros((len(s1)+1,len(s2)+1))
+    DTW[:, 0] = np.inf
+    DTW[0, :] = np.inf 
+    DTW[0, 0] = 0
+
+    for i in range(1, DTW.shape[0]):
+        for j in range(1, DTW.shape[1]):
+            dist= (s1[i-1]-s2[j-1])**2
+            DTW[i, j] = dist + min(DTW[i-1, j], DTW[i, j-1], DTW[i-1, j-1])
+    return math.sqrt(DTW[len(s1), len(s2)]), DTW
+"""
+
+def dtw(a, b):   
+    an = a.size
+    bn = b.size
+    pointwise_distance = distance.cdist(a.reshape(-1,1),b.reshape(-1,1))
+    cumdist = np.matrix(np.ones((an+1,bn+1)) * np.inf)
+    cumdist[0,0] = 0
+
+    for ai in range(an):
+        for bi in range(bn):
+            minimum_cost = np.min([cumdist[ai, bi+1],
+                                   cumdist[ai+1, bi],
+                                   cumdist[ai, bi]])
+            cumdist[ai+1, bi+1] = pointwise_distance[ai,bi] + minimum_cost
+
+    return cumdist[an, bn]
     
-def MLP():
-    print("Multi Layer Perceptron")
+def DTW_Classifier():
+    print("DTW")
     start_time = t.time()
     print("Chargement...")
     
@@ -72,7 +104,6 @@ def MLP():
     VertSpeed_index = 6
     Alt_index = 7
     
-    nVariable= 6
     
     for sign in tqdm(lst):
         temp = df[ df["callsign"].str.strip() == sign.strip()]
@@ -83,7 +114,7 @@ def MLP():
         Values += list(temp.iloc[:,Velocity_index].values)
         Values += list(temp.iloc[:,Heading_index].values)
         Values += list(temp.iloc[:,VertSpeed_index].values)
-        Values += list(temp.iloc[:,Alt_index].values)
+        Values = list(temp.iloc[:,Alt_index].values)
         
         
         
@@ -105,7 +136,7 @@ def MLP():
 
     # creation des ensembles train / test
     X_train, X_test, y_train, y_test = train_test_split(datas.iloc[:,1:-1],datas.iloc[:,-1], 
-                                                        test_size=0.2, random_state=50)
+                                                        test_size=0.5, random_state=42)
   
     
     #Normalisationd des donnees
@@ -118,20 +149,12 @@ def MLP():
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
     
+    parameters = {'n_neighbors':[1]}
+    clf = GridSearchCV(KNeighborsClassifier(metric=dtw), parameters, cv=3, verbose=1)
     
-
-    # creation du classifieur de reseau de neurones multicouches
-    perceptron = MLPClassifier(
-                               hidden_layer_sizes=(180*nVariable,180*nVariable), 
-                               max_iter=300,
-                               activation = 'relu',
-                               solver='adam',
-                               random_state=1
-                               )
+    clf.fit(X_train , y_train)
     
-    perceptron.fit(X_train , y_train)
-    
-    predictions = perceptron.predict(X_test)
+    predictions = clf.predict(X_test)
     # evaluation du classifieur
     cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4,5,6,7,8])
     

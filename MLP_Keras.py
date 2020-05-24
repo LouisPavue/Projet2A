@@ -1,16 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri May 15 10:59:38 2020
-
-@author: yassine.sameh
-"""
 import pandas as pd
-import numpy as np
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Activation, Dropout
+from tensorflow.keras.metrics import Precision, Recall, AUC
 from tqdm import tqdm
 from datetime import datetime
 from math import *
-
 import matplotlib.pyplot as plt
 
 import seaborn as sns
@@ -24,28 +19,39 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+import tensorflow.keras.backend as K
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 
 
-def display_runtime(start):
-    run_time = t.time() - start
-    hours = run_time // 3600
-    minutes = (run_time % 3600) // 60
-    seconds = (run_time % 3600) % 60
-    result = ""
-    if hours > 0:
-        result = str(int(hours)) + "h "
-    if minutes > 0:
-        result += str(int(minutes)) + "min "
-    result += str(int(seconds)) + "s "
-    result += str(round((seconds-int(seconds))*1000)) + "ms"
-    print('Elapsed Time : ', result)
+
+nVariable= 6
+
+def mean_pred(y_true,y_pred):
+    return K.mean(y_pred)
+
+def build_fn(optimizer):
+    model = Sequential()
+    model.add(
+        Dense(220*nVariable, input_dim=180*nVariable, activation="relu")
+    )
+    model.add(
+        Dense(180*nVariable, input_dim=180*nVariable, activation="relu")
+    )
+    model.add(Dense(9, activation="softmax"))
     
-def MLP():
-    print("Multi Layer Perceptron")
-    start_time = t.time()
-    print("Chargement...")
-    
-    # lecture des donnees
+    model.compile(
+        loss="categorical_crossentropy",
+        optimizer=optimizer,
+        metrics=[
+            Precision(name="precision"),
+            Recall(name="recall"),
+            AUC(name="auc"),
+        ],
+    )
+    return model
+
+def MLP_keras():
+# lecture des donnees
     df = pd.read_csv('data/scalledValues.csv', header=0)
     
     
@@ -72,7 +78,6 @@ def MLP():
     VertSpeed_index = 6
     Alt_index = 7
     
-    nVariable= 6
     
     for sign in tqdm(lst):
         temp = df[ df["callsign"].str.strip() == sign.strip()]
@@ -117,22 +122,34 @@ def MLP():
        
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
-    
-    
 
-    # creation du classifieur de reseau de neurones multicouches
-    perceptron = MLPClassifier(
-                               hidden_layer_sizes=(180*nVariable,180*nVariable), 
-                               max_iter=300,
-                               activation = 'relu',
-                               solver='adam',
-                               random_state=1
-                               )
+
     
-    perceptron.fit(X_train , y_train)
+    input_dim = X_train.shape[1]
+    nb_classes = 9
+    """
+    model = Sequential()
+    model.add(Dense(nVariable*input_dim, input_dim=input_dim))
+    model.add(Activation('sigmoid'))
+    #model.add(Dropout(0.1))
+    model.add(Dense(nVariable*input_dim))
+    model.add(Activation('sigmoid'))
+    #model.add(Dropout(0.2))
+    model.add(Dense(nb_classes))
+
+
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy',mean_pred])
+
+    model.fit(X_train, y_train)
+
+    predictions = model.predict_classes(X_test)
+    """
+
+    clf = KerasClassifier(build_fn, optimizer="rmsprop", epochs=120, batch_size=10)
+    clf.fit(X_train, y_train)
+    predictions = clf.predict(X_test)
     
-    predictions = perceptron.predict(X_test)
-    # evaluation du classifieur
+    
     cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4,5,6,7,8])
     
     index = ["decollage","atterrissage",
@@ -158,4 +175,4 @@ def MLP():
     print(cnf_matrix)
     print(classification_report(predictions , y_test))
     print('Accuracy: %.2f' % accuracy_score(y_test, predictions))
-    display_runtime(start_time)
+
