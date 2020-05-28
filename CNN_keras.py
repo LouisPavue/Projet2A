@@ -88,7 +88,7 @@ cube = cube.swapaxes(2,1)
 
 
 from sklearn.model_selection import StratifiedShuffleSplit
-split = StratifiedShuffleSplit(n_splits=1, test_size=0.2)
+split = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=50)
 train_index, test_index = list(split.split(cube[:,0:-1,0],cube[:,-1,0]))[0]
 #len(train_index), len(test_index)    
 
@@ -138,15 +138,15 @@ input_layer = keras.layers.Input(input_shape)
 
 # BLOCK 1
 
-conv_x = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=8, padding='same')(input_layer)
+conv_x = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=8, padding='same',kernel_initializer='normal')(input_layer)
 conv_x = keras.layers.BatchNormalization()(conv_x)
 conv_x = keras.layers.Activation('relu')(conv_x)
 
-conv_y = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=5, padding='same')(conv_x)
+conv_y = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=5, padding='same',kernel_initializer='normal')(conv_x)
 conv_y = keras.layers.BatchNormalization()(conv_y)
 conv_y = keras.layers.Activation('relu')(conv_y)
 
-conv_z = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=3, padding='same')(conv_y)
+conv_z = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=3, padding='same',kernel_initializer='normal')(conv_y)
 conv_z = keras.layers.BatchNormalization()(conv_z)
 
 # expand channels for the sum
@@ -158,15 +158,15 @@ output_block_1 = keras.layers.Activation('relu')(output_block_1)
 
 # BLOCK 2
 
-conv_x = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=8, padding='same')(output_block_1)
+conv_x = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=8, padding='same',kernel_initializer='normal')(output_block_1)
 conv_x = keras.layers.BatchNormalization()(conv_x)
 conv_x = keras.layers.Activation('relu')(conv_x)
 
-conv_y = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=5, padding='same')(conv_x)
+conv_y = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=5, padding='same',kernel_initializer='normal')(conv_x)
 conv_y = keras.layers.BatchNormalization()(conv_y)
 conv_y = keras.layers.Activation('relu')(conv_y)
 
-conv_z = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=3, padding='same')(conv_y)
+conv_z = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=3, padding='same',kernel_initializer='normal')(conv_y)
 conv_z = keras.layers.BatchNormalization()(conv_z)
 
 # expand channels for the sum
@@ -178,15 +178,15 @@ output_block_2 = keras.layers.Activation('relu')(output_block_2)
 
 # BLOCK 3
 
-conv_x = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=8, padding='same')(output_block_2)
+conv_x = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=8, padding='same',kernel_initializer='normal')(output_block_2)
 conv_x = keras.layers.BatchNormalization()(conv_x)
 conv_x = keras.layers.Activation('relu')(conv_x)
 
-conv_y = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=5, padding='same')(conv_x)
+conv_y = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=5, padding='same',kernel_initializer='normal')(conv_x)
 conv_y = keras.layers.BatchNormalization()(conv_y)
 conv_y = keras.layers.Activation('relu')(conv_y)
 
-conv_z = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=3, padding='same')(conv_y)
+conv_z = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=3, padding='same',kernel_initializer='normal')(conv_y)
 conv_z = keras.layers.BatchNormalization()(conv_z)
 
 # no need to expand channels because they are equal
@@ -203,6 +203,8 @@ output_layer = keras.layers.Dense(z, activation='softmax')(gap_layer)
 
 model = keras.models.Model(inputs=input_layer, outputs=output_layer)
 
+model = keras.Sequential([model])
+
 model.compile(loss='categorical_crossentropy', optimizer=keras.optimizers.Adam(),
               metrics=['accuracy'])
 
@@ -217,10 +219,11 @@ callbacks = [reduce_lr, model_checkpoint]
 
 
 # We fixed the number of epochs to 2000: meaning there will be 2000 
-# training passes over the whole dataset    25
-nb_epochs = 2000
+# training passes over the whole dataset    1000
+#%%
+nb_epochs = 5000
 
-# the batch size is fixed also: the dataset is divided to 256 batches 
+# the batch size is fixed also: the dataset is divided to 12 batches 
 # for each batch we will apply a gradient descent and update the parameters 
 mini_batch_size = 12
 """
@@ -238,26 +241,26 @@ model = keras.models.load_model('best_model.hdf5')
 loss, acc = model.evaluate(x_test, y_test)
 
 print('Test accuracy', acc)
-"""
-        metric = 'loss'
-        plt.figure()
-        plt.plot(hist.history[metric])
-        plt.plot(hist.history['val_'+metric])
-        plt.title('model '+metric)
-        plt.ylabel(metric,fontsize='large')
-        plt.xlabel('epoch',fontsize='large')
-        plt.legend(['train', 'val'], loc='upper left')
-        plt.show()
-        plt.close()
-"""
 
 
-"""
+metric = 'loss'
+plt.figure()
+plt.plot(hist.history[metric])
+plt.plot(hist.history['val_'+metric])
+plt.title('model '+metric)
+plt.ylabel(metric,fontsize='large')
+plt.xlabel('epoch',fontsize='large')
+plt.legend(['train', 'val'], loc='upper left')
+plt.show()
+plt.close()
+
+
+
 #predictions = model.predict_classes(x_test)
-y_prob = model.predict(x_test) 
 
+y_classes = model.predict_classes(x_test)
 
-y_classes = y_prob.argmax(axis=-1)
+print('Accuracy: %.2f' % accuracy_score(y_test[:,0], y_classes))
 
 cnf_matrix = confusion_matrix(y_classes, y_test[:,0], labels=[0,1,2,3,4,5,6,7,8])
 
@@ -285,6 +288,7 @@ sns.heatmap(cm_df, annot=True,cmap="YlGnBu")
 #print(classification_report(y_classes , y_test[:,0]))
 print('Accuracy: %.2f' % accuracy_score(y_test[:,0], y_classes))
 
-"""
+
 #print("Mean accuracy : "+str(som/n))
     
+

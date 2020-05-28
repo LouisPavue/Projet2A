@@ -20,7 +20,7 @@ def parser(x):
 	return datetime.utcfromtimestamp(int(x)).strftime('%Y-%m-%d %H:%M:%S')
 
 df = pd.read_csv("data/states_2019-12-23-00.csv", header =0, engine='python')
-labels = pd.read_csv("data/label.csv", header =0, engine='python')
+labels = pd.read_csv("data/label2.csv", header =0, engine='python')
 # nettoyage des donnees
 df = df.dropna()    #suppression des cases nulles
 df = df[ df["callsign"].str.strip() != ("")]    #suppression des cases avec callsign == "   "
@@ -86,7 +86,7 @@ def createLabelisedCSV():
     X.index = np.arange(len(X))   #réagencement des index
     #print("Taille : "+str(maxim)) 
     
-    f = open("scalledValues.csv","w")
+    f = open("data/scalledValues.csv","w")
     f.write("time,callsign,lat,lon,velocity,heading,vertrate,baroaltitude,label\n")
     for i in tqdm(range(0,len(X))):
         f.write(str(X.loc[i]['time'])+","+X.loc[i]['callsign']+","+str(X.loc[i]['lat'])+","+str(X.loc[i]['lon'])+","+str(X.loc[i]['velocity'])+","+str(X.loc[i]['heading'])+","+str(X.loc[i]['vertrate'])+","+str(X.loc[i]['baroaltitude'])+","+X.loc[i]['label']+"\n")
@@ -166,8 +166,8 @@ def convertCSV(inputDF):
     return out_df
 
 createLabelisedCSV()
-scalled = pd.read_csv("scalledValues.csv", header =0, engine='python')
-
+scalled = pd.read_csv("data/scalledValues.csv", header =0, engine='python')
+"""
 output = convertCSV(df[0:100])
 
 print("géneration d'un fichier de test")
@@ -184,7 +184,7 @@ for i in tqdm(range(0, len(output))):
 f.close()
 
 xtest = pd.read_csv("X_testGenerated.csv", header =0, engine='python')
-
+"""
 """
 
 
