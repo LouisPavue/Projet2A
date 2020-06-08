@@ -75,13 +75,13 @@ def dtw(a, b):
     
 def KNN():
     print("KNN")
-    start_time = t.time()
+    
     print("Chargement...")
     
     # lecture des donnees
-    df = pd.read_csv('data/scalledValues.csv', header=0)
+    df = pd.read_csv('data/scalledValues_test.csv', header=0)
     
-    
+    """
     label = {'decollage': 0,
              'atterrissage': 1,
              'virage_montee': 2,
@@ -92,8 +92,15 @@ def KNN():
              'descente_croisiere': 7,
              'croisiere':8
              } 
-  
-
+  """
+    
+    label = {'decollage': 0,
+             'atterrissage': 1,            
+             'procedure': 2,
+             'croisiere':3,
+             'virage':4
+             } 
+    
     df.label = [label[item] for item in df.label] 
     
     lst = df["callsign"].unique()
@@ -115,7 +122,7 @@ def KNN():
         Values += list(temp.iloc[:,Velocity_index].values)
         Values += list(temp.iloc[:,Heading_index].values)
         Values += list(temp.iloc[:,VertSpeed_index].values)
-        Values = list(temp.iloc[:,Alt_index].values)
+        Values += list(temp.iloc[:,Alt_index].values)
         
         
         
@@ -135,6 +142,7 @@ def KNN():
         datas = pd.concat([datas, speed_df], ignore_index=True)
         
 
+    
     # creation des ensembles train / test
     X_train, X_test, y_train, y_test = train_test_split(datas.iloc[:,1:-1],datas.iloc[:,-1], 
                                                         test_size=0.2, random_state=42)
@@ -150,15 +158,19 @@ def KNN():
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
     
-    
+    """
+    X_test = X_test[0,:].reshape(1,-1)
+    y_test = y_test[0:1]
+    """
     clf = KNeighborsClassifier(n_neighbors=1)
-    
+    start_time = t.time()
     clf.fit(X_train , y_train)
     
     predictions = clf.predict(X_test)
     # evaluation du classifieur
-    cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4,5,6,7,8])
-    
+    #cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4,5,6,7,8])
+    cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4])
+    """
     index = ["decollage","atterrissage",
              "virage_montee",
              "virage_descente",
@@ -177,13 +189,38 @@ def KNN():
              'descente_croisiere',
              'croisiere'
             ] 
-   
+   """
+    index = ["decollage",
+             "atterrissage", 
+             'procedure',
+             'croisiere',
+             'virage'
+            ]  
+    columns =["decollage",
+             "atterrissage", 
+             'procedure',
+             'croisiere',
+             'virage'
+            ]  
+    
     cm_df = pd.DataFrame(cnf_matrix,columns,index)
     sns.heatmap(cm_df, annot=True,cmap="YlGnBu")
     print(cnf_matrix)
     print(classification_report(predictions , y_test))
     print('Accuracy: %.2f' % accuracy_score(y_test, predictions))
     display_runtime(start_time)# -*- coding: utf-8 -*-
+    plt.show()
+    score = []
+    for i in range(1,15):
+        clf = KNeighborsClassifier(n_neighbors=i)    
+        clf.fit(X_train , y_train)       
+        predictions = clf.predict(X_test)
+        score.append(accuracy_score(y_test, predictions))
+        
+        
+    plt.plot(score)
+    plt.show()
+        
 """
 mat = [[4 ,0 ,3 ,0 ,0 ,0 ,0 ,0 ,0],
      [0 ,4 ,0 ,4 ,0 ,3, 0, 0, 0],

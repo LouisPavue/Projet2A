@@ -30,14 +30,17 @@ df = df.drop(columns=["icao24" , "onground" , "alert" , "spi" , "squawk" , "geoa
 
 #--------------- Vitesse Verticale ----------------
 #%%
-nMin= 110
-nMax = 140
+nMin= 42
+nMax = nMin + 10
 
 lst = df["callsign"].unique()[nMin:nMax]
+#df = df[ df["callsign"].str.strip() == "UAE223"]
+#lst = df["callsign"].unique()
 
 for sign in tqdm(lst):
     print("\n"+sign)
     temp = df[ df["callsign"].str.strip() == sign.strip()]
+    
     Xp = temp.iloc[: ,:].values
 
     plt.figure(figsize=(10, 3))
@@ -61,3 +64,5 @@ for sign in tqdm(lst):
     plt.ylabel (df.columns[7])
     plt.suptitle(sign)
     plt.show ()
+    print("Alt :\n")
+    print(Xp[:,7])

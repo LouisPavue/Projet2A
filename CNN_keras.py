@@ -21,11 +21,27 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 import seaborn as sns
 from sklearn.metrics import accuracy_score
-df = pd.read_csv('data/scalledValues.csv', header=0)
+
+import time as t
+df = pd.read_csv('data/scalledValues_test.csv', header=0)
 lst = df["callsign"].unique()
 
 
+def display_runtime(start):
+    run_time = t.time() - start
+    hours = run_time // 3600
+    minutes = (run_time % 3600) // 60
+    seconds = (run_time % 3600) % 60
+    result = ""
+    if hours > 0:
+        result = str(int(hours)) + "h "
+    if minutes > 0:
+        result += str(int(minutes)) + "min "
+    result += str(int(seconds)) + "s "
+    result += str(round((seconds-int(seconds))*1000)) + "ms"
+    print('Elapsed Time : ', result)
 
+"""
 label = {'decollage': 0,
              'atterrissage': 1,
              'virage_montee': 2,
@@ -36,9 +52,16 @@ label = {'decollage': 0,
              'descente_croisiere': 7,
              'croisiere':8
              } 
+"""
 
-
-
+label = {'decollage': 0,
+             'atterrissage': 1,            
+             'procedure': 2,
+             'croisiere':3,
+             'virage':4
+             } 
+ 
+ 
 df.label = [label[item] for item in df.label] 
 
 
@@ -86,7 +109,7 @@ cube = cube.swapaxes(2,1)
 #x_train, x_test, y_train, y_test = train_test_split(cube[:,:,0:-1],cube[:,:,-1:], 
 #                                                        test_size=0.2, random_state=42)
 
-
+#%%
 from sklearn.model_selection import StratifiedShuffleSplit
 split = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=50)
 train_index, test_index = list(split.split(cube[:,0:-1,0],cube[:,-1,0]))[0]
@@ -103,6 +126,11 @@ x_test = cube[91:,0:-1,:]
 y_test = cube[91:,-1:,0]
 """
 
+def scheduler(epoch, lr):
+   if epoch < 10:
+     return lr
+   else:
+     return lr * keras.math.exp(-0.1)
 
 # transform the labels from integers to one hot vectors
 """
@@ -138,15 +166,15 @@ input_layer = keras.layers.Input(input_shape)
 
 # BLOCK 1
 
-conv_x = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=8, padding='same',kernel_initializer='normal')(input_layer)
+conv_x = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=8, padding='same')(input_layer)
 conv_x = keras.layers.BatchNormalization()(conv_x)
 conv_x = keras.layers.Activation('relu')(conv_x)
 
-conv_y = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=5, padding='same',kernel_initializer='normal')(conv_x)
+conv_y = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=5, padding='same')(conv_x)
 conv_y = keras.layers.BatchNormalization()(conv_y)
 conv_y = keras.layers.Activation('relu')(conv_y)
 
-conv_z = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=3, padding='same',kernel_initializer='normal')(conv_y)
+conv_z = keras.layers.Conv1D(filters=n_feature_maps, kernel_size=3, padding='same')(conv_y)
 conv_z = keras.layers.BatchNormalization()(conv_z)
 
 # expand channels for the sum
@@ -158,15 +186,15 @@ output_block_1 = keras.layers.Activation('relu')(output_block_1)
 
 # BLOCK 2
 
-conv_x = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=8, padding='same',kernel_initializer='normal')(output_block_1)
+conv_x = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=8, padding='same')(output_block_1)
 conv_x = keras.layers.BatchNormalization()(conv_x)
 conv_x = keras.layers.Activation('relu')(conv_x)
 
-conv_y = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=5, padding='same',kernel_initializer='normal')(conv_x)
+conv_y = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=5, padding='same')(conv_x)
 conv_y = keras.layers.BatchNormalization()(conv_y)
 conv_y = keras.layers.Activation('relu')(conv_y)
 
-conv_z = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=3, padding='same',kernel_initializer='normal')(conv_y)
+conv_z = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=3, padding='same')(conv_y)
 conv_z = keras.layers.BatchNormalization()(conv_z)
 
 # expand channels for the sum
@@ -178,15 +206,15 @@ output_block_2 = keras.layers.Activation('relu')(output_block_2)
 
 # BLOCK 3
 
-conv_x = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=8, padding='same',kernel_initializer='normal')(output_block_2)
+conv_x = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=8, padding='same')(output_block_2)
 conv_x = keras.layers.BatchNormalization()(conv_x)
 conv_x = keras.layers.Activation('relu')(conv_x)
 
-conv_y = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=5, padding='same',kernel_initializer='normal')(conv_x)
+conv_y = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=5, padding='same')(conv_x)
 conv_y = keras.layers.BatchNormalization()(conv_y)
 conv_y = keras.layers.Activation('relu')(conv_y)
 
-conv_z = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=3, padding='same',kernel_initializer='normal')(conv_y)
+conv_z = keras.layers.Conv1D(filters=n_feature_maps * 2, kernel_size=3, padding='same')(conv_y)
 conv_z = keras.layers.BatchNormalization()(conv_z)
 
 # no need to expand channels because they are equal
@@ -208,20 +236,20 @@ model = keras.Sequential([model])
 model.compile(loss='categorical_crossentropy', optimizer=keras.optimizers.Adam(),
               metrics=['accuracy'])
 
-reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=50, min_lr=0.0001)
+reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=50, min_lr=0.0001)  #0.0001
 
 file_path = 'best_model.hdf5'
 
 model_checkpoint = keras.callbacks.ModelCheckpoint(filepath=file_path, monitor='loss',
                                                     save_best_only=True)
 
-callbacks = [reduce_lr, model_checkpoint]
-
+#callbacks = [reduce_lr, model_checkpoint]
+callbacks = keras.callbacks.LearningRateScheduler(scheduler)
 
 # We fixed the number of epochs to 2000: meaning there will be 2000 
 # training passes over the whole dataset    1000
 #%%
-nb_epochs = 5000
+nb_epochs = 1200
 
 # the batch size is fixed also: the dataset is divided to 12 batches 
 # for each batch we will apply a gradient descent and update the parameters 
@@ -232,6 +260,7 @@ for i in range(0,100,10):
     for j in range(0,100,10):
 """
         # we call the fit function and provide the corresponding hyperparameters and callbacks
+start_time = t.time()
 hist = model.fit(x_train, y_train, batch_size=mini_batch_size, epochs=nb_epochs,
                       verbose=True,validation_data=(x_test,y_test) , callbacks=[reduce_lr,model_checkpoint])
 
@@ -262,8 +291,10 @@ y_classes = model.predict_classes(x_test)
 
 print('Accuracy: %.2f' % accuracy_score(y_test[:,0], y_classes))
 
-cnf_matrix = confusion_matrix(y_classes, y_test[:,0], labels=[0,1,2,3,4,5,6,7,8])
+#cnf_matrix = confusion_matrix(y_classes, y_test[:,0], labels=[0,1,2,3,4,5,6,7,8])
+cnf_matrix = confusion_matrix(y_classes, y_test[:,0], labels=[0,1,2,3,4])
 
+"""
 index = ["decollage","atterrissage",
          "virage_montee",
          "virage_descente",
@@ -282,12 +313,25 @@ columns =["decollage","atterrissage",
          'descente_croisiere',
          'croisiere'
         ] 
+"""
+index = ["decollage",
+             "atterrissage", 
+             'procedure',
+             'croisiere',
+             'virage'
+            ]  
+columns =["decollage",
+             "atterrissage", 
+             'procedure',
+             'croisiere',
+             'virage'
+            ]  
 cm_df = pd.DataFrame(cnf_matrix,columns,index)
 sns.heatmap(cm_df, annot=True,cmap="YlGnBu")
 #print(cnf_matrix)
 #print(classification_report(y_classes , y_test[:,0]))
 print('Accuracy: %.2f' % accuracy_score(y_test[:,0], y_classes))
-
+display_runtime(start_time)
 
 #print("Mean accuracy : "+str(som/n))
     

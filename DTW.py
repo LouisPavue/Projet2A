@@ -136,7 +136,7 @@ def DTW_Classifier():
 
     # creation des ensembles train / test
     X_train, X_test, y_train, y_test = train_test_split(datas.iloc[:,1:-1],datas.iloc[:,-1], 
-                                                        test_size=0.5, random_state=42)
+                                                        test_size=0.2, random_state=42)
   
     
     #Normalisationd des donnees
@@ -150,7 +150,7 @@ def DTW_Classifier():
     X_test = scaler.transform(X_test)
     
     parameters = {'n_neighbors':[1]}
-    clf = GridSearchCV(KNeighborsClassifier(metric=dtw), parameters, cv=3, verbose=1)
+    clf = GridSearchCV(KNeighborsClassifier(metric=dtw), parameters, cv=3, verbose=True)
     
     clf.fit(X_train , y_train)
     

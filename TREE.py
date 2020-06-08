@@ -83,9 +83,9 @@ def TREE():
     print("Chargement...")
     
     # lecture des donnees
-    df = pd.read_csv('data/scalledValues.csv', header=0)
+    df = pd.read_csv('data/scalledValues_test.csv', header=0)
     
-    
+    """
     label = {'decollage': 0,
              'atterrissage': 1,
              'virage_montee': 2,
@@ -96,7 +96,14 @@ def TREE():
              'descente_croisiere': 7,
              'croisiere':8
              } 
-  
+  """
+    label = {'decollage': 0,
+             'atterrissage': 1,            
+             'procedure': 2,
+             'croisiere':3,
+             'virage':4
+             } 
+
 
     df.label = [label[item] for item in df.label] 
     
@@ -155,14 +162,16 @@ def TREE():
     X_test = scaler.transform(X_test)
     
     
-    clf = RandomForestClassifier(n_estimators=100)
+    clf = RandomForestClassifier(n_estimators=500)
     
     clf.fit(X_train , y_train)
     
     predictions = clf.predict(X_test)
     # evaluation du classifieur
-    cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4,5,6,7,8])
+    #cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4,5,6,7,8])
+    cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4])
     
+    """
     index = ["decollage","atterrissage",
              "virage_montee",
              "virage_descente",
@@ -181,14 +190,30 @@ def TREE():
              'descente_croisiere',
              'croisiere'
             ] 
+    
+    """
+    index = ["decollage",
+             "atterrissage", 
+             'procedure',
+             'croisiere',
+             'virage'
+            ]  
+    columns =["decollage",
+             "atterrissage", 
+             'procedure',
+             'croisiere',
+             'virage'
+            ]  
    
     cm_df = pd.DataFrame(cnf_matrix,columns,index)
-    plt.figure(figsize = (16,5))
-    sns.heatmap(cm_df, annot=True,cmap="Greens")
+    sns.heatmap(cm_df, annot=True,cmap="Greens",square=True)
+    
     print(cnf_matrix)
     print(classification_report(predictions , y_test))
+    plt.show()
     print('Accuracy: %.2f' % accuracy_score(y_test, predictions))
     display_runtime(start_time)# -*- coding: utf-8 -*-
+    
 """
 mat = [[4 ,0 ,3 ,0 ,0 ,0 ,0 ,0 ,0],
      [0 ,4 ,0 ,4 ,0 ,3, 0, 0, 0],

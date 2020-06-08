@@ -82,9 +82,9 @@ def SVM():
     print("Chargement...")
     
     # lecture des donnees
-    df = pd.read_csv('data/scalledValues.csv', header=0)
+    df = pd.read_csv('data/scalledValues_test.csv', header=0)
     
-    
+    """
     label = {'decollage': 0,
              'atterrissage': 1,
              'virage_montee': 2,
@@ -95,8 +95,13 @@ def SVM():
              'descente_croisiere': 7,
              'croisiere':8
              } 
-  
-
+    """
+    label = {'decollage': 0,
+             'atterrissage': 1,            
+             'procedure': 2,
+             'croisiere':3,
+             'virage':4
+             } 
     df.label = [label[item] for item in df.label] 
     
     lst = df["callsign"].unique()
@@ -160,8 +165,10 @@ def SVM():
     
     predictions = clf.predict(X_test)
     # evaluation du classifieur
-    cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4,5,6,7,8])
+    #cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4,5,6,7,8])
+    cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4])
     
+    """
     index = ["decollage","atterrissage",
              "virage_montee",
              "virage_descente",
@@ -180,7 +187,20 @@ def SVM():
              'descente_croisiere',
              'croisiere'
             ] 
-   
+   """
+    index = ["decollage",
+             "atterrissage", 
+             'procedure',
+             'croisiere',
+             'virage'
+            ]  
+    columns =["decollage",
+             "atterrissage", 
+             'procedure',
+             'croisiere',
+             'virage'
+            ]  
+    
     cm_df = pd.DataFrame(cnf_matrix,columns,index)
     sns.heatmap(cm_df, annot=True,cmap="YlGnBu")
     print(cnf_matrix)
