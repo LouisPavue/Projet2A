@@ -9,19 +9,12 @@ Created on Wed May 20 16:07:31 2020
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import tensorflow.keras as keras
 from sklearn.preprocessing import MinMaxScaler
-
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import OneHotEncoder
-
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
 import seaborn as sns
 from sklearn.metrics import accuracy_score
-
 import time as t
 
 
@@ -45,7 +38,7 @@ def scheduler(epoch, lr):
    else:
      return lr * keras.math.exp(-0.1)
 
-def CNN():
+def CNN(n_epochs,n_batch):
     df = pd.read_csv('data/scalledValues_test.csv', header=0)
     lst = df["callsign"].unique()
     
@@ -84,10 +77,6 @@ def CNN():
     y = len(lst)
     x = 181
     z = len(var)
-    
-    #cube = np.zeros((y,z,x))
-    som = 0
-    n = 1
     
     
     cube = np.zeros((z,y,x))
@@ -247,27 +236,16 @@ def CNN():
     model_checkpoint = keras.callbacks.ModelCheckpoint(filepath=file_path, monitor='loss',
                                                         save_best_only=True)
     
-    #callbacks = [reduce_lr, model_checkpoint]
-    callbacks = keras.callbacks.LearningRateScheduler(scheduler)
-    
-    # We fixed the number of epochs to 2000: meaning there will be 2000 
-    # training passes over the whole dataset    1000
-    nb_epochs = 1200
-    
-    # the batch size is fixed also: the dataset is divided to 12 batches 
-    # for each batch we will apply a gradient descent and update the parameters 
-    mini_batch_size = 12
+     
     """
-    f = open("crossvamidation.csv","w")
+    f = open("crossvalidation.csv","w")
     for i in range(0,100,10):
         for j in range(0,100,10):
     """
-            # we call the fit function and provide the corresponding hyperparameters and callbacks
     start_time = t.time()
-    hist = model.fit(x_train, y_train, batch_size=mini_batch_size, epochs=nb_epochs,
+    hist = model.fit(x_train, y_train, batch_size=n_batch, epochs=n_epochs,
                           verbose=True,validation_data=(x_test,y_test) , callbacks=[reduce_lr,model_checkpoint])
     
-    #, callbacks=[reduce_lr,model_checkpoint]
     model = keras.models.load_model('best_model.hdf5')
     
     loss, acc = model.evaluate(x_test, y_test)
@@ -285,10 +263,6 @@ def CNN():
     plt.legend(['train', 'val'], loc='upper left')
     plt.show()
     plt.close()
-    
-    
-    
-    #predictions = model.predict_classes(x_test)
     
     y_classes = model.predict_classes(x_test)
     

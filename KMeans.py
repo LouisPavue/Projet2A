@@ -9,23 +9,16 @@ Created on Tue May 19 11:53:17 2020
 """
 
 import pandas as pd
-import numpy as np
 from tqdm import tqdm
-from datetime import datetime
-from math import *
-import math
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import seaborn as sns
-from mpl_toolkits import mplot3d
-from sklearn.preprocessing import QuantileTransformer
 import time as t
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from scipy.spatial import distance
 
 
 def display_runtime(start):

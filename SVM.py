@@ -46,7 +46,7 @@ def display_runtime(start):
     print('Elapsed Time : ', result)
 
 
-
+datas = pd.DataFrame()
     
 def SVM():
     print("SVM")
@@ -77,7 +77,9 @@ def SVM():
     df.label = [label[item] for item in df.label] 
     
     lst = df["callsign"].unique()
-    datas = pd.DataFrame()
+    
+    global datas
+    
     Lat_index = 2
     Lon_index = 3
     Velocity_index = 4
@@ -85,34 +87,34 @@ def SVM():
     VertSpeed_index = 6
     Alt_index = 7
     
-    
-    for sign in tqdm(lst):
-        temp = df[ df["callsign"].str.strip() == sign.strip()]
-        
-        #----------- Concatenation des valeurs pour chaques variables ---------------
-        Values = list(temp.iloc[:,Lat_index].values)
-        Values += list(temp.iloc[:,Lon_index].values)
-        Values += list(temp.iloc[:,Velocity_index].values)
-        Values += list(temp.iloc[:,Heading_index].values)
-        Values += list(temp.iloc[:,VertSpeed_index].values)
-        Values = list(temp.iloc[:,Alt_index].values)
-        
-        
-        
-        label_string = temp["label"].unique()[0]
-        
-        #-----------  ---------------
-        Values.insert(0,sign.strip())
-        
-        Values += [label_string]
-        
-        speed_row = pd.Series(Values)
-        
-        speed_df = pd.DataFrame([speed_row])
-        
-        
-        
-        datas = pd.concat([datas, speed_df], ignore_index=True)
+    if (datas.shape[0] == 0):
+        for sign in tqdm(lst):
+            temp = df[ df["callsign"].str.strip() == sign.strip()]
+            
+            #----------- Concatenation des valeurs pour chaques variables ---------------
+            Values = list(temp.iloc[:,Lat_index].values)
+            Values += list(temp.iloc[:,Lon_index].values)
+            Values += list(temp.iloc[:,Velocity_index].values)
+            Values += list(temp.iloc[:,Heading_index].values)
+            Values += list(temp.iloc[:,VertSpeed_index].values)
+            Values = list(temp.iloc[:,Alt_index].values)
+            
+            
+            
+            label_string = temp["label"].unique()[0]
+            
+            #-----------  ---------------
+            Values.insert(0,sign.strip())
+            
+            Values += [label_string]
+            
+            speed_row = pd.Series(Values)
+            
+            speed_df = pd.DataFrame([speed_row])
+            
+            
+            
+            datas = pd.concat([datas, speed_df], ignore_index=True)
         
 
     # creation des ensembles train / test
