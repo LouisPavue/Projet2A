@@ -43,35 +43,9 @@ def display_runtime(start):
     print('Elapsed Time : ', result)
 
 
-"""
-def dtw(s1, s2):
-    DTW = np.zeros((len(s1)+1,len(s2)+1))
-    DTW[:, 0] = np.inf
-    DTW[0, :] = np.inf 
-    DTW[0, 0] = 0
 
-    for i in range(1, DTW.shape[0]):
-        for j in range(1, DTW.shape[1]):
-            dist= (s1[i-1]-s2[j-1])**2
-            DTW[i, j] = dist + min(DTW[i-1, j], DTW[i, j-1], DTW[i-1, j-1])
-    return math.sqrt(DTW[len(s1), len(s2)]), DTW
-"""
 
-def dtw(a, b):   
-    an = a.size
-    bn = b.size
-    pointwise_distance = distance.cdist(a.reshape(-1,1),b.reshape(-1,1))
-    cumdist = np.matrix(np.ones((an+1,bn+1)) * np.inf)
-    cumdist[0,0] = 0
 
-    for ai in range(an):
-        for bi in range(bn):
-            minimum_cost = np.min([cumdist[ai, bi+1],
-                                   cumdist[ai+1, bi],
-                                   cumdist[ai, bi]])
-            cumdist[ai+1, bi+1] = pointwise_distance[ai,bi] + minimum_cost
-
-    return cumdist[an, bn]
     
 def KMean():
     print("KNN")

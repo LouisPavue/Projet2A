@@ -43,35 +43,8 @@ def display_runtime(start):
     print('Elapsed Time : ', result)
 
 
-"""
-def dtw(s1, s2):
-    DTW = np.zeros((len(s1)+1,len(s2)+1))
-    DTW[:, 0] = np.inf
-    DTW[0, :] = np.inf 
-    DTW[0, 0] = 0
 
-    for i in range(1, DTW.shape[0]):
-        for j in range(1, DTW.shape[1]):
-            dist= (s1[i-1]-s2[j-1])**2
-            DTW[i, j] = dist + min(DTW[i-1, j], DTW[i, j-1], DTW[i-1, j-1])
-    return math.sqrt(DTW[len(s1), len(s2)]), DTW
-"""
 
-def dtw(a, b):   
-    an = a.size
-    bn = b.size
-    pointwise_distance = distance.cdist(a.reshape(-1,1),b.reshape(-1,1))
-    cumdist = np.matrix(np.ones((an+1,bn+1)) * np.inf)
-    cumdist[0,0] = 0
-
-    for ai in range(an):
-        for bi in range(bn):
-            minimum_cost = np.min([cumdist[ai, bi+1],
-                                   cumdist[ai+1, bi],
-                                   cumdist[ai, bi]])
-            cumdist[ai+1, bi+1] = pointwise_distance[ai,bi] + minimum_cost
-
-    return cumdist[an, bn]
     
 def KNN():
     print("KNN")
@@ -81,18 +54,20 @@ def KNN():
     # lecture des donnees
     df = pd.read_csv('data/scalledValues_test.csv', header=0)
     
+    
     """
     label = {'decollage': 0,
-             'atterrissage': 1,
-             'virage_montee': 2,
-             'virage_descente': 3,
-             'virage_croisiere': 4,
-             'procedure': 5,
-             'monte_croisiere': 6,
-             'descente_croisiere': 7,
-             'croisiere':8
-             } 
-  """
+                 'atterrissage': 1,
+                 'virage_montee': 2,
+                 'virage_descente': 3,
+                 'virage_croisiere': 4,
+                 'procedure': 5,
+                 'monte_croisiere': 6,
+                 'descente_croisiere': 7,
+                 'croisiere':8
+                 } 
+    """
+   
     
     label = {'decollage': 0,
              'atterrissage': 1,            
@@ -170,7 +145,8 @@ def KNN():
     # evaluation du classifieur
     #cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4,5,6,7,8])
     cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4])
-    """
+    
+     """
     index = ["decollage","atterrissage",
              "virage_montee",
              "virage_descente",
@@ -189,7 +165,9 @@ def KNN():
              'descente_croisiere',
              'croisiere'
             ] 
-   """
+    """
+    
+    
     index = ["decollage",
              "atterrissage", 
              'procedure',
@@ -221,14 +199,3 @@ def KNN():
     plt.plot(score)
     plt.show()
         
-"""
-mat = [[4 ,0 ,3 ,0 ,0 ,0 ,0 ,0 ,0],
-     [0 ,4 ,0 ,4 ,0 ,3, 0, 0, 0],
-     [0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0],
-     [0 ,3 ,0 ,4 ,0 ,1 ,1 ,1 ,1],
-     [0 ,0 ,1 ,1 ,0 ,0 ,2 ,0 ,1],
-     [0 ,3 ,0 ,1 ,0 ,2 ,0 ,0 ,0],
-     [0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0],
-     [2 ,3 ,0 ,5 ,0 ,0 ,0 ,1 ,0],
-     [0 ,0 ,0 ,0 ,3 ,0 ,0 ,2 ,8]]
-"""

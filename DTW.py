@@ -42,19 +42,7 @@ def display_runtime(start):
     print('Elapsed Time : ', result)
 
 
-"""
-def dtw(s1, s2):
-    DTW = np.zeros((len(s1)+1,len(s2)+1))
-    DTW[:, 0] = np.inf
-    DTW[0, :] = np.inf 
-    DTW[0, 0] = 0
 
-    for i in range(1, DTW.shape[0]):
-        for j in range(1, DTW.shape[1]):
-            dist= (s1[i-1]-s2[j-1])**2
-            DTW[i, j] = dist + min(DTW[i-1, j], DTW[i, j-1], DTW[i-1, j-1])
-    return math.sqrt(DTW[len(s1), len(s2)]), DTW
-"""
 
 def dtw(a, b):   
     an = a.size
@@ -183,14 +171,3 @@ def DTW_Classifier():
     print(classification_report(predictions , y_test))
     print('Accuracy: %.2f' % accuracy_score(y_test, predictions))
     display_runtime(start_time)# -*- coding: utf-8 -*-
-"""
-mat = [[4 ,0 ,3 ,0 ,0 ,0 ,0 ,0 ,0],
-     [0 ,4 ,0 ,4 ,0 ,3, 0, 0, 0],
-     [0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0],
-     [0 ,3 ,0 ,4 ,0 ,1 ,1 ,1 ,1],
-     [0 ,0 ,1 ,1 ,0 ,0 ,2 ,0 ,1],
-     [0 ,3 ,0 ,1 ,0 ,2 ,0 ,0 ,0],
-     [0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0],
-     [2 ,3 ,0 ,5 ,0 ,0 ,0 ,1 ,0],
-     [0 ,0 ,0 ,0 ,3 ,0 ,0 ,2 ,8]]
-"""
