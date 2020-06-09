@@ -22,7 +22,7 @@ Et d'utiliser un éditeur comme **spyder** avec la configuration fournie par **A
 
 3. Il est possible de choisir l'algorithme de classification à utiliser grâce à un menu lors de exécution du fichier **final_project.py**
 
-   ![image-20200609152713603](C:\Users\pavue\AppData\Roaming\Typora\typora-user-images\image-20200609152713603.png)
+   ![Screenshot](menu.png)
 
    
 
