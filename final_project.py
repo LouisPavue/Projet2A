@@ -64,14 +64,15 @@ def back():
 
 
 
-#=============== Plus Proches Voisins ====================
+#=============== Plus Proches Voisins ===========================
 
 def knn_function():
-    knn.KNN()
+    k = eval(input("Saisir la valeur du nombre de voisins: "))
+    knn.KNN(k)
     menu_actions['main_menu']()
 
 
-#=============== Arbre de décision ====================
+#=============== Arbre de décision ==============================
 
 def DecisionTree_function():
     DecisionTree.TREE()
@@ -91,11 +92,13 @@ def MLP_function():
     
 #=============== Convolutionnal Neural Network ===================
 def CNN_function():
-    cnn.CNN()
+    epochs = eval(input("Saisir la valeur du nombre d'époches: "))
+    batch_size = eval(input("Saisir la valeur du nombre pour le lot (batch): "))
+    cnn.CNN(epochs,batch_size)
     menu_actions['main_menu']()
 
 
-#======================== Menu ===============================================
+#======================== Menu ===================================
 # Executer le menu
 def exec_menu(choice):
     

@@ -9,23 +9,16 @@ Created on Tue May 19 11:53:17 2020
 """
 
 import pandas as pd
-import numpy as np
 from tqdm import tqdm
-from datetime import datetime
-from math import *
-import math
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 import seaborn as sns
-from mpl_toolkits import mplot3d
-from sklearn.preprocessing import QuantileTransformer
 import time as t
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from scipy.spatial import distance
 
 
 def display_runtime(start):
@@ -44,9 +37,10 @@ def display_runtime(start):
 
 
 
+datas = pd.DataFrame()
 
     
-def KNN():
+def KNN(k):
     print("KNN")
     
     print("Chargement...")
@@ -79,7 +73,9 @@ def KNN():
     df.label = [label[item] for item in df.label] 
     
     lst = df["callsign"].unique()
-    datas = pd.DataFrame()
+    
+    global datas
+    
     Lat_index = 2
     Lon_index = 3
     Velocity_index = 4
@@ -87,34 +83,34 @@ def KNN():
     VertSpeed_index = 6
     Alt_index = 7
     
-    
-    for sign in tqdm(lst):
-        temp = df[ df["callsign"].str.strip() == sign.strip()]
-        
-        #----------- Concatenation des valeurs pour chaques variables ---------------
-        Values = list(temp.iloc[:,Lat_index].values)
-        Values += list(temp.iloc[:,Lon_index].values)
-        Values += list(temp.iloc[:,Velocity_index].values)
-        Values += list(temp.iloc[:,Heading_index].values)
-        Values += list(temp.iloc[:,VertSpeed_index].values)
-        Values += list(temp.iloc[:,Alt_index].values)
-        
-        
-        
-        label_string = temp["label"].unique()[0]
-        
-        #-----------  ---------------
-        Values.insert(0,sign.strip())
-        
-        Values += [label_string]
-        
-        speed_row = pd.Series(Values)
-        
-        speed_df = pd.DataFrame([speed_row])
-        
-        
-        
-        datas = pd.concat([datas, speed_df], ignore_index=True)
+    if(datas.shape[0] == 0):
+        for sign in tqdm(lst):
+            temp = df[ df["callsign"].str.strip() == sign.strip()]
+            
+            #----------- Concatenation des valeurs pour chaques variables ---------------
+            Values = list(temp.iloc[:,Lat_index].values)
+            Values += list(temp.iloc[:,Lon_index].values)
+            Values += list(temp.iloc[:,Velocity_index].values)
+            Values += list(temp.iloc[:,Heading_index].values)
+            Values += list(temp.iloc[:,VertSpeed_index].values)
+            Values += list(temp.iloc[:,Alt_index].values)
+            
+            
+            
+            label_string = temp["label"].unique()[0]
+            
+            #-----------  ---------------
+            Values.insert(0,sign.strip())
+            
+            Values += [label_string]
+            
+            speed_row = pd.Series(Values)
+            
+            speed_df = pd.DataFrame([speed_row])
+            
+            
+            
+            datas = pd.concat([datas, speed_df], ignore_index=True)
         
 
     
@@ -137,7 +133,7 @@ def KNN():
     X_test = X_test[0,:].reshape(1,-1)
     y_test = y_test[0:1]
     """
-    clf = KNeighborsClassifier(n_neighbors=1)
+    clf = KNeighborsClassifier(n_neighbors=k)
     start_time = t.time()
     clf.fit(X_train , y_train)
     
@@ -146,7 +142,7 @@ def KNN():
     #cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4,5,6,7,8])
     cnf_matrix = confusion_matrix(predictions, y_test, labels=[0,1,2,3,4])
     
-     """
+    """
     index = ["decollage","atterrissage",
              "virage_montee",
              "virage_descente",

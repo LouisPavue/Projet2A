@@ -6,16 +6,11 @@ Created on Fri May 15 10:59:38 2020
 @author: yassine.sameh
 """
 import pandas as pd
-import numpy as np
 from tqdm import tqdm
-from datetime import datetime
-from math import *
 
 import matplotlib.pyplot as plt
 
 import seaborn as sns
-from mpl_toolkits import mplot3d
-from sklearn.preprocessing import QuantileTransformer
 
 import time as t
 from sklearn.preprocessing import StandardScaler
@@ -25,6 +20,8 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
+
+datas = pd.DataFrame()
 
 def display_runtime(start):
     run_time = t.time() - start
@@ -68,10 +65,10 @@ def MLP():
              } 
     """
 
-    df.label = [label[item] for item in df.label] 
-    
+    df.label = [label[item] for item in df.label]  
+    global datas
     lst = df["callsign"].unique()
-    datas = pd.DataFrame()
+    #datas = pd.DataFrame()
     Lat_index = 2
     Lon_index = 3
     Velocity_index = 4
@@ -81,33 +78,32 @@ def MLP():
     
     nVariable= 6
     
-    for sign in tqdm(lst):
-        temp = df[ df["callsign"].str.strip() == sign.strip()]
-        
-        #----------- Concatenation des valeurs pour chaques variables ---------------
-        Values = list(temp.iloc[:,Lat_index].values)
-        Values += list(temp.iloc[:,Lon_index].values)
-        Values += list(temp.iloc[:,Velocity_index].values)
-        Values += list(temp.iloc[:,Heading_index].values)
-        Values += list(temp.iloc[:,VertSpeed_index].values)
-        Values += list(temp.iloc[:,Alt_index].values)
-        
-        
-        
-        label_string = temp["label"].unique()[0]
-        
-        #-----------  ---------------
-        Values.insert(0,sign.strip())
-        
-        Values += [label_string]
-        
-        speed_row = pd.Series(Values)
-        
-        speed_df = pd.DataFrame([speed_row])
-        
-        
-        
-        datas = pd.concat([datas, speed_df], ignore_index=True)
+    if (datas.shape[0] == 0):
+        for sign in tqdm(lst):
+            temp = df[ df["callsign"].str.strip() == sign.strip()]
+            
+            #----------- Concatenation des valeurs pour chaques variables ---------------
+            Values = list(temp.iloc[:,Lat_index].values)
+            Values += list(temp.iloc[:,Lon_index].values)
+            Values += list(temp.iloc[:,Velocity_index].values)
+            Values += list(temp.iloc[:,Heading_index].values)
+            Values += list(temp.iloc[:,VertSpeed_index].values)
+            Values += list(temp.iloc[:,Alt_index].values)
+            
+            
+            
+            label_string = temp["label"].unique()[0]
+            
+            #-----------  ---------------
+            Values.insert(0,sign.strip())
+            
+            Values += [label_string]
+            
+            speed_row = pd.Series(Values)
+            
+            speed_df = pd.DataFrame([speed_row])
+            
+            datas = pd.concat([datas, speed_df], ignore_index=True)
         
 
     # creation des ensembles train / test
@@ -115,7 +111,7 @@ def MLP():
                                                         test_size=0.1, random_state=50)
   
     
-    #Normalisationd des donnees
+    #Normalisation des donnees
     scaler = StandardScaler()
     scaler.fit(X_train)
     
