@@ -206,7 +206,7 @@ def TREE():
             ]  
    
     cm_df = pd.DataFrame(cnf_matrix,columns,index)
-    sns.heatmap(cm_df, annot=True,cmap="Greens",square=True)
+    sns.heatmap(cm_df, annot=True,cmap="YlGnBu",square=True)
     
     print(cnf_matrix)
     print(classification_report(predictions , y_test))

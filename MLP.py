@@ -180,6 +180,7 @@ def MLP():
     
     cm_df = pd.DataFrame(cnf_matrix,columns,index)
     sns.heatmap(cm_df, annot=True,cmap="YlGnBu")
+    plt.show()
     print(cnf_matrix)
     print(classification_report(predictions , y_test))
     print('Accuracy: %.2f' % accuracy_score(y_test, predictions))
