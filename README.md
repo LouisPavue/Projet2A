@@ -36,7 +36,7 @@ Et d'utiliser un éditeur comme **spyder** avec la configuration fournie par **A
 
    ![Screenshot](result.png)
 
-   Voici un exemple de résultat pour l'exécution d'un des algorithme mis en place
+   Voici un exemple de résultat pour l'exécution d'un des algorithmes mis en place
 
 
 
