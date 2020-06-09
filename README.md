@@ -12,7 +12,7 @@ Et d'utiliser un éditeur comme **spyder** avec la configuration fournie par **A
 
 ## Utilisation 
 
-1. Les données se trouve dans un fichier **CSV** disponible à cette adresse : https://www.dropbox.com/s/cicsywbkt421koa/states_2019-12-23-00.csv?dl=0
+1. Les données étant trop volumineuse pour être déposer sur le git elles se trouvent dans un fichier **CSV** disponible à cette adresse : https://www.dropbox.com/s/cicsywbkt421koa/states_2019-12-23-00.csv?dl=0
 
    
 
